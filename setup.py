@@ -3,7 +3,7 @@
 
 from setuptools import setup, find_packages
 
-version = 0.1
+version = 0.2
 
 setup(
     name='gree',
@@ -14,7 +14,7 @@ setup(
     url='http://github.com/xTCx/gree-python-api',
     packages=find_packages(),
     scripts=[],
-    install_requires=['pycryptodome==3.4.11'],
+    install_requires=['pycryptodome>=3.4.11'],
     description='Python API for controlling Gree ACs',
     classifiers=[
         'Intended Audience :: Developers',
