@@ -8,3 +8,7 @@ class InvalidResponse(Exception):
 
 class InvalidConfigValue(Exception):
     pass
+
+
+class UnexpectedResponse(Exception):
+    pass

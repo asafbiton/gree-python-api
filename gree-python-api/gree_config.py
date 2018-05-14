@@ -1,4 +1,4 @@
-from exceptions import InvalidConfigValue
+from .exceptions import InvalidConfigValue
 
 
 class GreeConfig:
@@ -21,24 +21,20 @@ class GreeConfig:
 
     def __init__(self, config=None):
         self._config = config or {}
-        self._config_mapping = {
-            'power': self.set_power_on,
-            'temperature': self.set_temperature,
-            'mode': self.set_mode,
-            'quiet': self.set_quiet_mode_enabled,
-            'turbo': self.set_turbo_mode_enabled,
-            'fanSpeed': self.set_fan_speed,
-            'lights': self.set_display_enabled,
-            'swing': self.set_swing,
-            'health': self.set_health_mode_enabled,
-            'blow': self.set_blow_mode_enabled,
-            'air_valve': self.set_air_valve_enabled,
-            'energy_saving': self.set_energy_saving_enabled
-        }
 
+    # Properties
     @property
     def config(self):
         return self._config
+
+    @property
+    def power_on(self):
+        if "Pow" in self._config.keys():
+            return self._config["Pow"]
+
+    @power_on.setter
+    def power_on(self, enabled):
+        self.__set_bool("Pow", enabled)
 
     @property
     def temperature(self):
@@ -61,23 +57,97 @@ class GreeConfig:
         self.__set_mode(mode)
 
     @property
-    def is_quiet(self):
+    def quiet_mode_enabled(self):
         if "Quiet" in self._config.keys():
             return self._config["Quiet"] == 1
         return False
 
-    @is_quiet.setter
-    def is_quiet(self, is_quiet):
-        self.__set_quiet_mode_enabled(is_quiet)
+    @quiet_mode_enabled.setter
+    def quiet_mode_enabled(self, enabled):
+        self.__set_bool("Quiet", enabled)
 
-    # TODO: create general set_bool
+    @property
+    def fan_speed(self):
+        if "WdSpd" in self._config.keys():
+            return self._config["WdSpd"]
+        return False
 
-    def set_power_on(self, enabled=True):
-        if type(enabled) != bool:
-            raise InvalidConfigValue(f"Invalid config value received: {enabled}")
+    @fan_speed.setter
+    def fan_speed(self, fan_speed):
+        self.__set_fan_speed(fan_speed)
 
-        self._config["Pow"] = int(enabled)
+    @property
+    def display_enabled(self):
+        if "Lig" in self._config.keys():
+            return self._config["Lig"]
+        return False
 
+    @display_enabled.setter
+    def display_enabled(self, enabled):
+        self.__set_bool("Lig", enabled)
+
+    @property
+    def turbo_mode_enabled(self):
+        if "Tur" in self._config.keys():
+            return self._config["Tur"]
+        return False
+
+    @turbo_mode_enabled.setter
+    def turbo_mode_enabled(self, enabled):
+        self.__set_bool("Tur", enabled)
+
+    @property
+    def energy_saving_enabled(self):
+        if "SvSt" in self._config.keys():
+            return self._config["SvSt"]
+        return False
+
+    @energy_saving_enabled.setter
+    def energy_saving_enabled(self, enabled):
+        self.__set_bool("SvSt", enabled)
+        self.__set_energy_saving_enabled(enabled)
+
+    @property
+    def swing(self):
+        if "SwUpDn" in self._config.keys():
+            return self._config["SwUpDn"]
+        return False
+
+    @swing.setter
+    def swing(self, swing):
+        self.__set_swing(swing)
+
+    @property
+    def health_mode_enabled(self):
+        if "Health" in self._config.keys():
+            return self._config["Health"]
+        return False
+
+    @health_mode_enabled.setter
+    def health_mode_enabled(self, enabled):
+        self.__set_bool("Health", enabled)
+
+    @property
+    def blow_mode_enabled(self):
+        if "Blo" in self._config.keys():
+            return self._config["Blo"]
+        return False
+
+    @blow_mode_enabled.setter
+    def blow_mode_enabled(self, enabled):
+        self.__set_bool("Blo", enabled)
+
+    @property
+    def air_valve_enabled(self):
+        if "Air" in self._config.keys():
+            return self._config["Air"]
+        return False
+
+    @air_valve_enabled.setter
+    def air_valve_enabled(self, enabled):
+        self.__set_bool("Air", enabled)
+
+    # Private methods
     def __set_mode(self, mode):
         if type(mode) == int and mode not in self.MODES.values():
             raise InvalidConfigValue(f"Mode {mode} is not a valid mode")
@@ -95,38 +165,14 @@ class GreeConfig:
         self._config["TemUn"] = 1 if unit == "f" else 0
         self._config["SetTem"] = temp
 
-    def set_fan_speed(self, speed):
+    def __set_fan_speed(self, speed):
         if type(speed) != int or speed < self.MIN_FAN_SPEED or speed > self.MAX_FAN_SPEED:
             raise InvalidConfigValue(f"Speed {speed} is either invalid or "
                                      f"not in range ({self.MIN_FAN_SPEED} - {self.MAX_FAN_SPEED}).")
 
         self._config["WdSpd"] = speed
 
-    def set_display_enabled(self, enabled):
-        if type(enabled) != bool:
-            raise InvalidConfigValue(f"Invalid config value received: {enabled}")
-
-        self._config["Lig"] = int(enabled)
-
-    def __set_quiet_mode_enabled(self, enabled):
-        if type(enabled) != bool:
-            raise InvalidConfigValue(f"Invalid config value received: {enabled}")
-
-        self._config["Quiet"] = int(enabled)
-
-    def set_turbo_mode_enabled(self, enabled):
-        if type(enabled) != bool:
-            raise InvalidConfigValue(f"Invalid config value received: {enabled}")
-
-        self._config["Tur"] = int(enabled)
-
-    def set_energy_saving_enabled(self, enabled):
-        if type(enabled) != bool:
-            raise InvalidConfigValue(f"Invalid config value received: {enabled}")
-
-        self._config["SvSt"] = int(enabled)
-
-    def set_swing(self, swing):
+    def __set_swing(self, swing):
         """
         Sets AC swing, according to the following map:
         0: default
@@ -150,20 +196,8 @@ class GreeConfig:
 
         self._config["SwUpDn"] = int(swing)
 
-    def set_health_mode_enabled(self, enabled):
+    def __set_bool(self, key, enabled):
         if type(enabled) != bool:
             raise InvalidConfigValue(f"Invalid config value received: {enabled}")
 
-        self._config["Health"] = int(enabled)
-
-    def set_blow_mode_enabled(self, enabled):
-        if type(enabled) != bool:
-            raise InvalidConfigValue(f"Invalid config value received: {enabled}")
-
-        self._config["Blo"] = int(enabled)
-
-    def set_air_valve_enabled(self, enabled):
-        if type(enabled) != bool:
-            raise InvalidConfigValue(f"Invalid config value received: {enabled}")
-
-        self._config["Air"] = int(enabled)
+        self._config[key] = int(enabled)
