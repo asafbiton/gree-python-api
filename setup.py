@@ -8,6 +8,7 @@ version = 0.1
 setup(
     name='gree',
     version=version,
+    python_requires='>=3',
     author='Asaf Biton',
     author_email='bit.asaf@gmail.com',
     url='http://github.com/xTCx/gree-python-api',
