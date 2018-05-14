@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 version = 0.1
 
 setup(
-    name='gree-python-api',
+    name='gree',
     version=version,
     author='Asaf Biton',
     author_email='bit.asaf@gmail.com',

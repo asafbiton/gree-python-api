@@ -30,7 +30,7 @@ class GreeDevice():
 
     def __encrypt_pack(self, json_pack):
         bytestring = str.encode(json.dumps(json_pack))
-        return base64.b64encode(self.__unique_key.encrypt(bytestring))
+        return base64.b64encode(self.__unique_cipher.encrypt(bytestring))
 
     def __generate_status_packet(self):
         pack = json.loads("""
@@ -76,18 +76,12 @@ class GreeDevice():
 
         return packet
 
-    def _send_json(self, json_packet):
-        return self.__sock.sendto(json.dumps(json_packet), (self.__host, self.__port)) > 0
+    def __send_json(self, json_packet):
+        return self.__sock.sendto(json.dumps(json_packet).encode('utf-8'), (self.__host, self.__port)) > 0
 
     def __recv_response(self):
-        response = ''
-        while True:
-            data = self.__sock.recvfrom(1024)[0]
-            if not data:
-                break
-            response += data
-
-        return json.loads(response)
+        response = self.__sock.recvfrom(1024)[0]
+        return json.loads(response.decode('utf-8'))
 
     def __parse_response(self, response, cipher=None):
         cipher = cipher or self.__unique_cipher
@@ -111,8 +105,8 @@ class GreeDevice():
           "p": [0, 27],
           "t": "cmd"
         }""")
-        pack['opt'] = config.config.keys()
-        pack['p'] = config.config.values()
+        pack['opt'] = list(config.config.keys())
+        pack['p'] = list(config.config.values())
 
         encrypted_pack = self.__encrypt_pack(pack)
 
@@ -132,7 +126,7 @@ class GreeDevice():
     def update_status(self):
         status_packet = self.__generate_status_packet()
 
-        if self._send_json(status_packet):
+        if self.__send_json(status_packet):
             response = self.__recv_response()
             parsed_response = self.__parse_response(response)
 
@@ -140,7 +134,7 @@ class GreeDevice():
             keys = parsed_response['pack']['cols']
             values = parsed_response['pack']['dat']
 
-            for i in range(keys):
+            for i in range(len(keys)):
                 status[keys[i]] = values[i]
 
             self._status = status
@@ -168,22 +162,22 @@ class GreeDevice():
         """
 
         config = GreeConfig()
-        if power_on:        config.power_on = power_on
-        if temperature:     config.temperature = temperature
-        if mode:            config.mode = mode
-        if is_quiet:        config.fan_speed = fan_speed
-        if fan_speed:       config.swing = swing
-        if swing:           config.quiet_mode_enabled = is_quiet
-        if energy_saving:   config.energy_saving_enabled = energy_saving
-        if display_on:      config.display_enabled = display_on
-        if health_mode:     config.health_mode_enabled = health_mode
-        if air_valve:       config.air_valve_enabled = air_valve
-        if blow_mode:       config.blow_mode_enabled = blow_mode
-        if turbo_mode:      config.turbo_mode_enabled = turbo_mode
+        if power_on is not None:        config.power_on = power_on
+        if temperature is not None:     config.temperature = temperature
+        if mode is not None:            config.mode = mode
+        if fan_speed is not None:       config.fan_speed = fan_speed
+        if swing is not None:           config.swing = swing
+        if is_quiet is not None:        config.quiet_mode_enabled = is_quiet
+        if energy_saving is not None:   config.energy_saving_enabled = energy_saving
+        if display_on is not None:      config.display_enabled = display_on
+        if health_mode is not None:     config.health_mode_enabled = health_mode
+        if air_valve is not None:       config.air_valve_enabled = air_valve
+        if blow_mode is not None:       config.blow_mode_enabled = blow_mode
+        if turbo_mode is not None:      config.turbo_mode_enabled = turbo_mode
 
         cmd_packet = self.__generate_cmd_packet(config)
 
-        if self._send_json(cmd_packet):
+        if self.__send_json(cmd_packet):
             response = self.__recv_response()
             parsed_response = self.__parse_response(response)
 

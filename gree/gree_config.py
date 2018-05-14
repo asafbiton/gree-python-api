@@ -155,7 +155,7 @@ class GreeConfig:
         self._config["Mod"] = self.MODES[mode]
 
     def __set_temperature(self, temp, unit="c"):
-        if unit != "c" or unit != "f":
+        if unit != "c" and unit != "f":
             raise InvalidConfigValue(f"Unit {unit} is an invalid unit.")
 
         if type(temp) != int or temp < self.MIN_TEMP or temp > self.MAX_TEMP:
