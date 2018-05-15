@@ -105,7 +105,6 @@ class GreeConfig:
     @energy_saving_enabled.setter
     def energy_saving_enabled(self, enabled):
         self.__set_bool("SvSt", enabled)
-        self.__set_energy_saving_enabled(enabled)
 
     @property
     def swing(self):
@@ -149,10 +148,14 @@ class GreeConfig:
 
     # Private methods
     def __set_mode(self, mode):
-        if type(mode) == int and mode not in self.MODES.values():
+        if (mode is int and mode not in self.MODES.values()) or \
+                (mode is str and mode not in self.MODES.keys()):
             raise InvalidConfigValue(f"Mode {mode} is not a valid mode")
 
-        self._config["Mod"] = self.MODES[mode]
+        if mode is str:
+            mode = self.MODES[mode]
+
+        self._config["Mod"] = mode
 
     def __set_temperature(self, temp, unit="c"):
         if unit != "c" and unit != "f":
