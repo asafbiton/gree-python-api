@@ -8,7 +8,7 @@ from .exceptions import InvalidParameterGiven, InvalidResponse, UnexpectedRespon
 
 
 class GreeDevice():
-    GENERIC_AES_KEY = b"a3K8Bx%2r8Y7#xDh"
+    GENERIC_AES_KEY = b'a3K8Bx%2r8Y7#xDh'
     SCAN_PACKET = b'{"t": "scan"}'
 
     def __init__(self, mac, unique_key, host='255.255.255.255', port=7000, timeout=15):
