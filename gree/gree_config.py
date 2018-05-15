@@ -158,6 +158,9 @@ class GreeConfig:
         if unit != "c" and unit != "f":
             raise InvalidConfigValue(f"Unit {unit} is an invalid unit.")
 
+        if type(temp) == float:
+            temp = int(temp)
+
         if type(temp) != int or temp < self.MIN_TEMP or temp > self.MAX_TEMP:
             raise InvalidConfigValue(f"Temperature {temp} is invalid or "
                                      f"not in range ({self.MIN_TEMP} - {self.MAX_TEMP}).")
