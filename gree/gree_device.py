@@ -1,6 +1,7 @@
 import socket
 import base64
 import json
+import threading
 
 from .gree_config import GreeConfig
 from .aes_cipher import AESCipher
@@ -26,7 +27,9 @@ class GreeDevice():
         self.__sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.__sock.settimeout(timeout)
 
-        self._status = None
+        self.__status = None
+
+        self.__lock = threading.Lock()
 
     def __encrypt_pack(self, json_pack):
         bytestring = str.encode(json.dumps(json_pack))
@@ -77,10 +80,18 @@ class GreeDevice():
         return packet
 
     def __send_json(self, json_packet):
-        return self.__sock.sendto(json.dumps(json_packet).encode('utf-8'), (self.__host, self.__port)) > 0
+        bytes_sent = 0
+
+        with self.__lock:
+            bytes_sent = self.__sock.sendto(json.dumps(json_packet).encode('utf-8'), 
+                                            (self.__host, self.__port))
+
+        return bytes_sent > 0
 
     def __recv_response(self):
-        response = self.__sock.recvfrom(1024)[0]
+        with self.__lock:
+            response = self.__sock.recvfrom(1024)[0]
+
         return json.loads(response.decode('utf-8'))
 
     def __parse_response(self, response, cipher=None):
@@ -137,7 +148,7 @@ class GreeDevice():
             for i in range(len(keys)):
                 status[keys[i]] = values[i]
 
-            self._status = status
+            self.__status = status
             return True
         return False
 
@@ -191,6 +202,6 @@ class GreeDevice():
 
     @property
     def status(self):
-        if not self._status:
+        if not self.__status:
             self.update_status()
-        return self._status
+        return self.__status
